@@ -34,6 +34,7 @@ class Ticket {
     private string $body;
     private array $tags = [];
     private string $recipient = 'hello@esx.ro';
+    private array $uploads = [];
     private ?string $type = null;
     private ?array $requester = null;
     private ?string $priority = null;
@@ -72,6 +73,11 @@ class Ticket {
         return $this;
     }
 
+    public function setUploads(array $uploads) {
+        $this->uploads = $uploads;
+        return $this;
+    }
+
     public function setRequester(string $name, string $email) {
         $this->requester = [
             'name' => $name,
@@ -94,6 +100,7 @@ class Ticket {
             'subject' => $this->subject,
             'comment' => [
                 'body' => $this->body,
+                'uploads' => $this->uploads,
             ],
             'tags' => $this->tags,
             'recipient' => $this->recipient,
@@ -135,6 +142,25 @@ class API {
             ],
             CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => json_encode($ticket->toArray()),
+            CURLOPT_RETURNTRANSFER => true,
+        ]);
+
+        $output = curl_exec($ch);
+        curl_close($ch);
+        return $output;
+    }
+
+    function uploadFile($filePath, $fileName, $mime) {
+        $ch = curl_init();
+
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $this->apiUrl . 'uploads.json?' . http_build_query(['filename' => $fileName]),
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: '. $mime,
+                'Authorization: Basic ' . $this->apiToken,
+            ],
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => file_get_contents($filePath),
             CURLOPT_RETURNTRANSFER => true,
         ]);
 

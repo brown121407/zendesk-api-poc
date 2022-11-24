@@ -13,11 +13,28 @@ foreach ($fieldNames as $fieldName) {
 }
 
 $zendesk = new Zendesk\API();
+
 $ticket = (new Zendesk\Ticket())
     ->setSubject($_POST['subject'])
     ->setBody($_POST['body'])
     ->setRequester($_POST['firstName'] . ' ' . $_POST['lastName'], $_POST['email'])
     ->setTags([$_POST['tag']]);
+
+// If the user selected a file, we need to:
+// 1. Upload it to Zendesk
+// 2. Retrieve the token Zendesk gives us for that file
+// 3. Add the token to the 'uploads' field of the ticket comment.
+if ($_FILES['attachment']['size'] !== 0) {
+    $responseJson = $zendesk->uploadFile(
+        $_FILES['attachment']['tmp_name'],
+        $_FILES['attachment']['name'],
+        $_FILES['attachment']['type']
+    );
+    $response = json_decode($responseJson, true);
+    $uploadToken = $response['upload']['token'];
+
+    $ticket->setUploads([$uploadToken]);
+}
 
 echo $zendesk->createTicket($ticket);
 ?>
@@ -41,7 +58,7 @@ echo $zendesk->createTicket($ticket);
         </style>
     </head>
     <body>
-        <form action="/" method="post">
+        <form action="/" method="post" enctype="multipart/form-data">
             <h1>Contact</h1>
 
             <div>
@@ -76,6 +93,11 @@ echo $zendesk->createTicket($ticket);
                         <option value="<?= $tag ?>"><?= $tag ?></option>
                     <?php endforeach; ?>
                 </select>
+            </div>
+
+            <div>
+                <label for="attachment">Attachment</label>
+                <input type="file" id="attachment" name="attachment">
             </div>
 
             <button type="submit">Submit</button>
