@@ -5,7 +5,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST'): ?>
 
 <?php
 
-$fieldNames = ['subject', 'body', 'firstName', 'lastName', 'email', 'tag'];
+$fieldNames = ['subject', 'body', 'firstName', 'lastName', 'email', 'phone', 'address', 'tag'];
 foreach ($fieldNames as $fieldName) {
     if (empty($_POST[$fieldName])) {
         die('Invalid form. Missing ' . $fieldName);
@@ -17,7 +17,7 @@ $zendesk = new Zendesk\API();
 $ticket = (new Zendesk\Ticket())
     ->setSubject($_POST['subject'])
     ->setBody($_POST['body'])
-    ->setRequester($_POST['firstName'] . ' ' . $_POST['lastName'], $_POST['email'])
+    ->setRequester($_POST['firstName'] . ' ' . $_POST['lastName'], $_POST['email'], $_POST['phone'], $_POST['address'])
     ->setTags([$_POST['tag']]);
 
 // If the user selected a file, we need to:
@@ -74,6 +74,16 @@ echo $zendesk->createTicket($ticket);
             <div>
                 <label for="email">Email</label>
                 <input type="text" id="email" name="email">
+            </div>
+
+            <div>
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" name="phone">
+            </div>
+
+            <div>
+                <label for="address">Address</label>
+                <input type="text" id="address" name="address">
             </div>
 
             <div>

@@ -78,11 +78,17 @@ class Ticket {
         return $this;
     }
 
-    public function setRequester(string $name, string $email) {
+    public function setRequester(string $name, string $email, ?string $phone, ?string $address) {
         $this->requester = [
             'name' => $name,
             'email' => $email,
         ];
+        if ($phone) {
+            $this->requester['phone'] = $phone;
+        }
+        if ($address) {
+            $this->requester['details'] = $address;
+        }
         return $this;
     }
 
